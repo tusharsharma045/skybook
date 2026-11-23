@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { Navbar } from '@/components/common/Navbar';
 import { Footer } from '@/components/common/Footer';
+import { CookieConsentBanner } from '@/components/common/CookieConsentBanner';
 
 export const RootLayout: React.FC = () => {
   return (
@@ -11,6 +12,7 @@ export const RootLayout: React.FC = () => {
         <Outlet />
       </main>
       <Footer />
+      <CookieConsentBanner />
     </div>
   );
 };

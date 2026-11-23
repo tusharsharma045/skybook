@@ -8,10 +8,13 @@ export interface PassengerData {
   dateOfBirth?: string;
   gender: 'MALE' | 'FEMALE' | 'OTHER';
   nationality: string;
+  documentType?: string;
   passportNumber?: string;
   passportExpiry?: string;
   seatNumber?: string;
   baggageAllowance?: string;
+  mealPreference?: string;
+  specialAssistance?: string;
 }
 
 export interface BookingDraft {

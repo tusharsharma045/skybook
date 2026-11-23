@@ -8,6 +8,7 @@ import { RegisterPage } from '@/pages/RegisterPage';
 import { BookingsPage } from '@/pages/BookingsPage';
 import { ProfilePage } from '@/pages/ProfilePage';
 import { BookingPage } from '@/pages/BookingPage';
+import { LegalPage } from '@/pages/LegalPage';
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 
 export const router = createBrowserRouter([
@@ -54,6 +55,22 @@ export const router = createBrowserRouter([
             <ProfilePage />
           </ProtectedRoute>
         ),
+      },
+      {
+        path: 'terms',
+        element: <LegalPage />,
+      },
+      {
+        path: 'privacy',
+        element: <LegalPage />,
+      },
+      {
+        path: 'cookies',
+        element: <LegalPage />,
+      },
+      {
+        path: 'legal',
+        element: <LegalPage />,
       },
     ],
   },

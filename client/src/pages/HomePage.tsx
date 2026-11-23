@@ -3,115 +3,157 @@ import { FlightSearchWidget } from '@/features/flights/components/FlightSearchWi
 import { PopularDestinations } from '@/features/flights/components/PopularDestinations';
 import { FlightOffersSection } from '@/features/flights/components/FlightOffersSection';
 import { WhyChooseUs } from '@/features/flights/components/WhyChooseUs';
-import { ChevronDown, Star, Award, Shield } from 'lucide-react';
+import { ShieldCheck, Headphones, BadgePercent, Plane } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const HomePage: React.FC = () => {
   return (
-    <div className="relative overflow-hidden bg-gradient-to-b from-[#eaf1f8] via-[#f4f7fb] to-background dark:from-[#081226] dark:via-[#0c1833] dark:to-background">
-      {/* Aviation Ambient Sky Glow Background */}
-      <div className="absolute top-0 right-0 w-[800px] h-[600px] bg-gradient-to-bl from-sky-400/20 via-blue-600/10 to-transparent blur-[140px] -z-10 pointer-events-none" />
-      <div className="absolute top-1/4 left-0 w-[600px] h-[500px] bg-gradient-to-tr from-amber-400/10 via-sky-300/10 to-transparent blur-[120px] -z-10 pointer-events-none" />
+    <div className="bg-background">
+      {/* ══════════════════════════════════════════════════════
+          HERO — full viewport with floating cylindrical navbar
+      ══════════════════════════════════════════════════════ */}
+      <section
+        className="relative w-full min-h-screen lg:h-screen flex flex-col justify-between overflow-hidden -mt-[68px] sm:-mt-[80px]"
+      >
+        {/* ── Background airplane image & atmospheric lighting ── */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src="/hero-airplane.jpg"
+            alt="Airplane soaring above sunset clouds"
+            className="w-full h-full object-cover object-[62%_center]"
+          />
+          {/* Subtle gradient for text readability without washing out the photo */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#061a3a]/70 via-[#061a3a]/25 to-transparent" />
+          <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/20 to-transparent" />
+        </div>
 
-      {/* Main Hero Container */}
-      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-14">
-        {/* Exact Hero Section Matching Design */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-          {/* Left Column: Headline & Flight Search Widget */}
-          <div className="lg:col-span-7 xl:col-span-7 space-y-6 z-10 flex flex-col justify-between">
+        {/* ── Main Hero Content (Headline + Flight Search Card) ── */}
+        <div className="relative z-10 flex-1 flex flex-col justify-center container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-3">
+          <div className="max-w-[580px]">
+            {/* Pill Badge */}
             <motion.div
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="space-y-1"
+              transition={{ duration: 0.4 }}
+              className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/25 rounded-full px-3.5 py-1 mb-2.5"
             >
-              <span className="text-sm sm:text-base font-semibold tracking-wide text-[#1c4982] dark:text-sky-300 italic font-serif">
-                Our Wings, Your World
-              </span>
-              <h1 className="text-5xl sm:text-6xl xl:text-7xl font-extrabold uppercase font-display text-[#09326e] dark:text-white tracking-tight leading-[0.95] drop-shadow-xs">
-                ELEVATE YOUR<br />EXPERIENCE
-              </h1>
+              <span className="text-white text-xs font-semibold tracking-wide">✈ Our Wings, Your World</span>
             </motion.div>
 
-            {/* Floating Search Widget */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
+            {/* Headline */}
+            <motion.h1
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.15 }}
+              transition={{ duration: 0.5, delay: 0.06 }}
+              className="text-3xl sm:text-4xl lg:text-[3.25rem] font-extrabold leading-[1.05] tracking-tight text-white mb-1.5"
+            >
+              Elevate Your<br />
+              <span className="text-sky-400">Experience</span>
+            </motion.h1>
+
+            {/* Sub-headline */}
+            <motion.p
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, delay: 0.12 }}
+              className="text-white/80 text-xs sm:text-sm mb-3.5"
+            >
+              Book flights, explore the world, and fly with comfort.
+            </motion.p>
+
+            {/* Flight Search Widget Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.18 }}
             >
               <FlightSearchWidget />
             </motion.div>
           </div>
+        </div>
 
-          {/* Right Column: Hero Airplane Visual */}
-          <div className="lg:col-span-5 xl:col-span-5 relative w-full flex flex-col justify-end pt-4 lg:pt-14">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, x: 20 }}
-              animate={{ opacity: 1, scale: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative w-full h-full min-h-[420px] lg:min-h-[460px] flex flex-col"
-            >
-              {/* Organic Curved Container for Airplane Graphic */}
-              <div className="relative flex-1 w-full rounded-[2.5rem] overflow-hidden shadow-2xl border-4 border-white/60 dark:border-white/10 group bg-slate-900/40">
-                <img
-                  src="/hero-airplane.png"
-                  alt="Aviation jetliner banking through sunset clouds"
-                  className="absolute inset-0 w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-1000 ease-out"
-                />
-                {/* Subtle soft gradient bottom edge */}
-                <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none" />
-                <div className="absolute bottom-5 left-5 right-5 text-white text-xs font-medium flex items-center justify-between pointer-events-none">
-                  <span className="bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/20 shadow-sm">
-                    ✈ Premium Long-Haul Fleet
-                  </span>
-                  <span className="bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/20 shadow-sm">
-                    Non-stop Connectivity
-                  </span>
+        {/* ── Bottom Section: Trust Badges (Left) & Dream. Book. Fly. (Right) ── */}
+        <div className="relative z-10 w-full container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-5 pt-1">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            
+            {/* Left: 100% Secure, 24/7 Support, Best Price */}
+            <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-white">
+              {/* Badge 1 */}
+              <div className="flex items-center gap-2.5">
+                <ShieldCheck className="w-5 h-5 text-sky-400 shrink-0" />
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold leading-tight">100% Secure</span>
+                  <span className="text-[11px] text-white/70 leading-tight">Booking</span>
                 </div>
               </div>
 
-              {/* Decorative Floating Accent Glow */}
-              <div className="absolute -inset-4 bg-gradient-to-r from-sky-400/20 to-blue-600/20 rounded-[3rem] blur-xl -z-10" />
-            </motion.div>
+              {/* Divider */}
+              <div className="h-7 w-[1px] bg-white/20 hidden sm:block" />
+
+              {/* Badge 2 */}
+              <div className="flex items-center gap-2.5">
+                <Headphones className="w-5 h-5 text-sky-400 shrink-0" />
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold leading-tight">24/7 Customer</span>
+                  <span className="text-[11px] text-white/70 leading-tight">Support</span>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="h-7 w-[1px] bg-white/20 hidden sm:block" />
+
+              {/* Badge 3 */}
+              <div className="flex items-center gap-2.5">
+                <BadgePercent className="w-5 h-5 text-sky-400 shrink-0" />
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold leading-tight">Best Price</span>
+                  <span className="text-[11px] text-white/70 leading-tight">Guarantee</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Line + Airplane + Dream. Book. Fly. in stylish bold script */}
+            <div className="flex items-center gap-3 self-end sm:self-auto">
+              {/* Trailing line */}
+              <div className="w-12 sm:w-20 lg:w-28 h-[1.5px] bg-white/45 hidden xs:block" />
+              
+              {/* Airplane icon */}
+              <Plane className="w-5 h-5 text-white transform rotate-45 shrink-0 drop-shadow-md" />
+
+              {/* Stylish cursive text with calligraphy swoosh underline */}
+              <div className="relative inline-block pb-1">
+                <span className="font-script text-3xl sm:text-4xl lg:text-[2.75rem] font-bold text-white tracking-wide drop-shadow-lg select-none whitespace-nowrap">
+                  Dream. Book. Fly.
+                </span>
+                {/* Calligraphic swoosh underline under the words */}
+                <svg
+                  className="absolute -bottom-1 sm:-bottom-1.5 right-0 w-36 sm:w-48 lg:w-56 h-3 text-white/90"
+                  viewBox="0 0 180 12"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M4 3.5C35 2 110 1.5 176 9"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </div>
+            </div>
+
           </div>
         </div>
+      </section>
 
-        {/* Global Rating & Safety Badge (7 Stars) */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.35 }}
-          className="mt-10 pt-6 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left"
-        >
-          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
-            <div className="flex items-center text-amber-400 gap-0.5">
-              {[...Array(7)].map((_, i) => (
-                <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400 drop-shadow-xs" />
-              ))}
-            </div>
-            <span className="text-xs sm:text-sm font-semibold text-foreground">
-              Awarded highest ranking for safety and service by global rating agencies
-            </span>
-          </div>
-
-          <a
-            href="#offers"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-600 dark:text-sky-400 hover:text-sky-700 transition-colors cursor-pointer group"
-          >
-            <span>Scroll down to see our best offers</span>
-            <ChevronDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
-          </a>
-        </motion.div>
-
-        {/* Popular Destinations (Indian & Global hubs) */}
+      {/* ══════════════════════════════════════════════════════
+          BELOW-THE-FOLD SECTIONS
+      ══════════════════════════════════════════════════════ */}
+      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-14">
         <PopularDestinations />
-
-        {/* Exclusive Airline Offers & Flash Deals */}
         <div id="offers">
           <FlightOffersSection />
         </div>
-
-        {/* Why Choose Us */}
         <WhyChooseUs />
       </div>
     </div>

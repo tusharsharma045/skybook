@@ -12,6 +12,7 @@ interface AirportAutocompleteProps {
   onSelect: (airport: Airport) => void;
   icon?: React.ReactNode;
   className?: string;
+  inputClassName?: string;
 }
 
 export const AirportAutocomplete: React.FC<AirportAutocompleteProps> = ({
@@ -22,6 +23,7 @@ export const AirportAutocomplete: React.FC<AirportAutocompleteProps> = ({
   onSelect,
   icon,
   className = '',
+  inputClassName = '',
 }) => {
   const [query, setQuery] = useState(
     selectedAirport ? `${selectedAirport.city} (${selectedAirport.iataCode})` : value || ''
@@ -89,7 +91,7 @@ export const AirportAutocomplete: React.FC<AirportAutocompleteProps> = ({
           }}
           onFocus={() => setIsOpen(true)}
           placeholder={placeholder}
-          className="w-full h-12 pl-10 pr-9 rounded-xl border border-input bg-card text-sm font-semibold text-foreground placeholder:text-muted-foreground/70 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary transition-all shadow-xs"
+          className={`w-full ${inputClassName || 'h-10'} pl-10 pr-9 rounded-xl border border-input bg-card text-sm font-semibold text-foreground placeholder:text-muted-foreground/70 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary transition-all shadow-xs`}
         />
 
         {query && (

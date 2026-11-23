@@ -80,6 +80,9 @@
   .font-display {
     font-family: 'Oswald', 'Plus Jakarta Sans', sans-serif;
   }
+  .font-script {
+    font-family: 'Caveat', 'Kaushan Script', 'Dancing Script', cursive;
+  }
 }
 
 /* Glassmorphism custom helpers */
@@ -107,4 +110,23 @@
   background: rgba(10, 15, 29, 0.9);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
+}
+
+/* Continuous slow linear marquee */
+@keyframes marquee-linear {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-marquee-linear {
+  animation: marquee-linear 36s linear infinite;
+  will-change: transform;
+}
+
+.group:hover .animate-marquee-linear {
+  animation-play-state: paused;
 }

@@ -6,12 +6,12 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/features/auth/useAuth';
 import {
   Compass,
-  Ticket,
+  Briefcase,
   User,
   LogOut,
   ChevronDown,
   PlaneTakeoff,
-  Sparkles,
+  Star,
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
@@ -25,43 +25,53 @@ export const Navbar: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 glass-nav transition-colors duration-200">
-      <div className="container max-w-7xl mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 w-full pt-3 sm:pt-4 px-3 sm:px-6 lg:px-8 pointer-events-none">
+      <div className="container max-w-7xl mx-auto flex h-14 sm:h-16 items-center justify-between px-4 sm:px-6 lg:px-7 bg-white/90 dark:bg-[#0c1833]/90 backdrop-blur-md rounded-full border border-white/60 dark:border-white/10 shadow-lg shadow-sky-950/10 pointer-events-auto transition-colors duration-200">
         <Logo />
 
-        <nav className="hidden md:flex items-center gap-7 text-sm font-semibold">
+        {/* Center Nav Links */}
+        <nav className="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-semibold">
           <Link
             to="/"
-            className={`transition-colors hover:text-primary flex items-center gap-1.5 ${
-              location.pathname === '/' ? 'text-primary' : 'text-muted-foreground'
+            className={`relative transition-colors flex items-center gap-1.5 py-1 ${
+              location.pathname === '/'
+                ? 'text-primary font-bold'
+                : 'text-muted-foreground hover:text-primary'
             }`}
           >
             <Compass className="w-4 h-4" />
-            Explore Flights
+            <span>Explore Flights</span>
+            {location.pathname === '/' && (
+              <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-primary rounded-full" />
+            )}
           </Link>
           <Link
             to="/bookings"
-            className={`transition-colors hover:text-primary flex items-center gap-1.5 ${
-              location.pathname.startsWith('/bookings') ? 'text-primary' : 'text-muted-foreground'
+            className={`transition-colors flex items-center gap-1.5 py-1 ${
+              location.pathname.startsWith('/bookings')
+                ? 'text-primary font-bold'
+                : 'text-muted-foreground hover:text-primary'
             }`}
           >
-            <Ticket className="w-4 h-4" />
-            My Bookings
+            <Briefcase className="w-4 h-4" />
+            <span>My Bookings</span>
           </Link>
           <a
             href="#offers"
-            className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
+            className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5 py-1"
           >
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-            Special Deals
+            <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-400" />
+            <span>Special Deals</span>
           </a>
         </nav>
 
-        <div className="flex items-center gap-3">
+        {/* Right Controls */}
+        <div className="flex items-center gap-2 sm:gap-3">
           {/* Indian Currency Pill */}
-          <div className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted/60 text-xs font-bold text-foreground border border-border/50">
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100/80 dark:bg-muted/60 text-xs font-bold text-foreground border border-border/40 shadow-xs">
             <span>🇮🇳</span>
             <span>INR (₹)</span>
+            <ChevronDown className="w-3 h-3 text-muted-foreground" />
           </div>
 
           <ThemeToggle />
@@ -70,25 +80,26 @@ export const Navbar: React.FC = () => {
             <div className="relative">
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center gap-2.5 p-1.5 rounded-full hover:bg-accent/80 transition-colors focus:outline-none"
+                className="flex items-center gap-2 sm:gap-2.5 p-1 sm:pr-2.5 rounded-full hover:bg-slate-100/60 dark:hover:bg-accent/60 transition-colors focus:outline-none"
                 aria-expanded={dropdownOpen}
               >
-                <div className="w-8 h-8 rounded-full bg-primary text-white font-bold text-xs flex items-center justify-center shadow-sm">
+                <div className="w-8 h-8 rounded-full bg-primary text-white font-bold text-xs flex items-center justify-center shadow-xs shrink-0">
                   {getInitials(user.firstName, user.lastName)}
                 </div>
                 <div className="hidden sm:flex flex-col text-left">
-                  <span className="text-xs font-bold leading-none">{user.firstName} {user.lastName}</span>
-                  <span className="text-[10px] text-muted-foreground">{user.email}</span>
+                  <span className="text-xs font-bold leading-tight text-foreground">
+                    {user.firstName} {user.lastName}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground leading-tight">
+                    {user.email}
+                  </span>
                 </div>
                 <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
               </button>
 
               {dropdownOpen && (
                 <>
-                  <div
-                    className="fixed inset-0 z-40"
-                    onClick={() => setDropdownOpen(false)}
-                  />
+                  <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
                   <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-card border border-border shadow-xl p-1.5 z-50 text-sm animate-in fade-in zoom-in-95">
                     <div className="px-3 py-2 border-b border-border/50 mb-1">
                       <p className="font-semibold text-xs truncate">{user.firstName} {user.lastName}</p>
@@ -133,13 +144,12 @@ export const Navbar: React.FC = () => {
           ) : (
             <>
               <Link to="/login">
-                <Button variant="ghost" size="sm" className="hidden sm:inline-flex text-muted-foreground hover:text-foreground font-semibold">
+                <Button variant="ghost" size="sm" className="hidden sm:inline-flex text-muted-foreground hover:text-foreground font-semibold rounded-full px-3">
                   Sign In
                 </Button>
               </Link>
-
               <Link to="/register">
-                <Button size="sm" className="rounded-xl px-4 font-bold shadow-md">
+                <Button size="sm" className="rounded-full px-4 font-bold shadow-md">
                   Book Now
                 </Button>
               </Link>

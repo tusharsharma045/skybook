@@ -181,9 +181,9 @@ export const getPopularDestinations = async () => {
       city: 'Srinagar',
       country: 'India',
       airportCode: 'SXR',
-      image: 'https://images.unsplash.com/photo-1627916607164-7b20241db935?auto=format&fit=crop&w=800&q=80',
+      image: 'https://images.unsplash.com/photo-1598091383021-15ddea10925d?auto=format&fit=crop&w=800&q=80',
       startingPrice: 4899,
-      tag: 'Paradise Valley',
+      tag: 'Dal Lake Shikaras',
       flightDuration: '1h 25m from DEL',
     },
     {

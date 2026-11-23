@@ -41,7 +41,7 @@ export const BookingPage: React.FC = () => {
   }
 
   return (
-    <div className="container max-w-5xl mx-auto py-10 px-4 sm:px-6 lg:px-8 space-y-8">
+    <div className="container max-w-6xl mx-auto pt-10 sm:pt-14 pb-16 px-4 sm:px-6 lg:px-8 space-y-8">
       {/* 4-Step Progress Indicator */}
       <BookingStepper currentStep={currentStep} />
 

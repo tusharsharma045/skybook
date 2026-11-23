@@ -127,45 +127,48 @@ export const FlightSearchWidget: React.FC<FlightSearchWidgetProps> = ({
   };
 
   return (
-    <div className={`w-full bg-white dark:bg-card rounded-3xl shadow-2xl border border-border/70 overflow-hidden ${compact ? 'p-4 sm:p-6' : ''}`}>
-      {/* Top Navigation Tabs matching the Banner: Book | My Flight | Check-In */}
-      <div className="flex items-center border-b border-border/50 bg-slate-50/60 dark:bg-muted/30">
+    <div className={`w-full bg-white/95 dark:bg-card backdrop-blur-md rounded-2xl shadow-2xl border border-white/60 dark:border-border/70 overflow-hidden ${compact ? 'p-4 sm:p-6' : ''}`}>
+      {/* Top Navigation Tabs */}
+      <div className="flex items-center border-b border-border/50 bg-white/80 dark:bg-muted/30">
         <button
           type="button"
           onClick={() => setActiveTab('book')}
-          className={`px-7 py-3.5 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 ${
+          className={`px-5 py-2.5 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 ${
             activeTab === 'book'
               ? 'border-primary text-primary bg-white dark:bg-card'
               : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
+          <PlaneTakeoff className="w-3.5 h-3.5" />
           <span>Book</span>
         </button>
 
         <button
           type="button"
           onClick={() => navigate('/bookings')}
-          className="px-7 py-3.5 text-xs font-bold transition-all border-b-2 border-transparent text-muted-foreground hover:text-primary flex items-center gap-1.5"
+          className="px-5 py-2.5 text-xs font-bold transition-all border-b-2 border-transparent text-muted-foreground hover:text-primary flex items-center gap-1.5"
         >
+          <Ticket className="w-3.5 h-3.5" />
           <span>My Flight</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('check-in')}
-          className={`px-7 py-3.5 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 ${
+          className={`px-5 py-2.5 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 ${
             activeTab === 'check-in'
               ? 'border-primary text-primary bg-white dark:bg-card'
               : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
+          <Check className="w-3.5 h-3.5" />
           <span>Check-In</span>
         </button>
       </div>
 
       {/* Tab 1: Book Flight */}
       {activeTab === 'book' && (
-        <div className="p-5 sm:p-7 space-y-4">
+        <div className="p-4 sm:p-5 space-y-3">
           {/* Controls Bar: Trip Type & Passenger Selectors */}
           <div className="flex flex-wrap items-center gap-2">
             {/* Trip Type Selector */}
@@ -173,10 +176,11 @@ export const FlightSearchWidget: React.FC<FlightSearchWidgetProps> = ({
               <button
                 type="button"
                 onClick={() => setIsTripTypeDropdownOpen(!isTripTypeDropdownOpen)}
-                className="px-3.5 py-1.5 rounded-full border border-border bg-slate-100/70 dark:bg-muted text-xs font-bold text-foreground hover:bg-slate-200/70 flex items-center gap-1.5 transition-colors"
+                className="px-3.5 py-1.5 rounded-full border border-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 dark:border-emerald-700 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 flex items-center gap-1.5 transition-colors"
               >
+                <ArrowRightLeft className="w-3 h-3" />
                 <span>{tripType === 'ROUND_TRIP' ? 'Round-trip' : 'One-way'}</span>
-                <ChevronDown className="w-3 h-3 text-muted-foreground" />
+                <ChevronDown className="w-3 h-3 opacity-70" />
               </button>
 
               {isTripTypeDropdownOpen && (
@@ -353,9 +357,9 @@ export const FlightSearchWidget: React.FC<FlightSearchWidgetProps> = ({
           </div>
 
           {/* Form Inputs Grid */}
-          <form onSubmit={handleSearch} className="space-y-4">
+          <form onSubmit={handleSearch} className="space-y-3">
             {/* Origin & Destination with Swap */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 relative">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 relative">
               <div>
                 <AirportAutocomplete
                   label="From"
@@ -371,11 +375,11 @@ export const FlightSearchWidget: React.FC<FlightSearchWidgetProps> = ({
               </div>
 
               {/* Swap Button in center on tablet/desktop */}
-              <div className="sm:absolute sm:left-1/2 sm:top-7 sm:-translate-x-1/2 sm:z-10 flex justify-center -my-1 sm:my-0">
+              <div className="sm:absolute sm:left-1/2 sm:top-[26px] sm:-translate-x-1/2 sm:z-10 flex justify-center -my-1 sm:my-0">
                 <button
                   type="button"
                   onClick={handleSwapAirports}
-                  className="w-8 h-8 rounded-full border border-border bg-white dark:bg-card shadow-sm hover:bg-accent text-muted-foreground hover:text-primary flex items-center justify-center transition-transform active:rotate-180"
+                  className="w-7 h-7 rounded-full border border-border bg-white dark:bg-card shadow-sm hover:bg-accent text-muted-foreground hover:text-primary flex items-center justify-center transition-transform active:rotate-180"
                   title="Swap Origin and Destination"
                 >
                   <ArrowRightLeft className="w-3.5 h-3.5" />
@@ -398,7 +402,7 @@ export const FlightSearchWidget: React.FC<FlightSearchWidgetProps> = ({
             </div>
 
             {/* Dates Row */}
-            <div className={`grid ${tripType === 'ROUND_TRIP' ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'} gap-3`}>
+            <div className={`grid ${tripType === 'ROUND_TRIP' ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'} gap-2.5`}>
               <div>
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
                   Departure Date
@@ -409,7 +413,7 @@ export const FlightSearchWidget: React.FC<FlightSearchWidgetProps> = ({
                     value={departureDate}
                     min={new Date().toISOString().split('T')[0]}
                     onChange={(e) => setDepartureDate(e.target.value)}
-                    className="w-full h-12 px-3.5 rounded-xl border border-input bg-card text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary shadow-xs"
+                    className="w-full h-10 px-3 rounded-xl border border-input bg-card text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary"
                     required
                   />
                 </div>
@@ -426,7 +430,7 @@ export const FlightSearchWidget: React.FC<FlightSearchWidgetProps> = ({
                       value={returnDate}
                       min={departureDate || new Date().toISOString().split('T')[0]}
                       onChange={(e) => setReturnDate(e.target.value)}
-                      className="w-full h-12 px-3.5 rounded-xl border border-input bg-card text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary shadow-xs"
+                      className="w-full h-10 px-3 rounded-xl border border-input bg-card text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary"
                       required
                     />
                   </div>
@@ -435,7 +439,7 @@ export const FlightSearchWidget: React.FC<FlightSearchWidgetProps> = ({
             </div>
 
             {/* Promo Code Toggle & Field */}
-            <div className="pt-1">
+            <div>
               <button
                 type="button"
                 onClick={() => setShowPromoField(!showPromoField)}
@@ -452,7 +456,7 @@ export const FlightSearchWidget: React.FC<FlightSearchWidgetProps> = ({
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="mt-2.5 overflow-hidden"
+                    className="mt-2 overflow-hidden"
                   >
                     <div className="flex items-center gap-2">
                       <div className="relative flex-1">
@@ -462,7 +466,7 @@ export const FlightSearchWidget: React.FC<FlightSearchWidgetProps> = ({
                           value={promoCode}
                           onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
                           placeholder="e.g. SKYINDIA, DIWALI26"
-                          className="w-full h-10 pl-9 pr-3 rounded-xl border border-input bg-card text-xs font-mono font-bold uppercase placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-primary/20"
+                          className="w-full h-9 pl-9 pr-3 rounded-xl border border-input bg-card text-xs font-mono font-bold uppercase placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-primary/20"
                         />
                       </div>
                       <span className="text-[11px] text-emerald-600 font-bold">10% OFF</span>
@@ -472,13 +476,14 @@ export const FlightSearchWidget: React.FC<FlightSearchWidgetProps> = ({
               </AnimatePresence>
             </div>
 
-            {/* Primary Action Button: "Show Flights" in Deep Royal Blue */}
+            {/* Search Flights Button */}
             <Button
               type="submit"
-              className="w-full h-13 rounded-2xl text-base font-extrabold shadow-lg shadow-primary/25 tracking-wide flex items-center justify-center gap-2 transition-all active:scale-[0.99]"
+              className="w-full h-11 rounded-xl text-sm font-bold shadow-lg shadow-primary/25 tracking-wide flex items-center justify-center gap-2 transition-all active:scale-[0.99]"
             >
-              <Search className="w-5 h-5" />
-              <span>Show Flights</span>
+              <Search className="w-4 h-4" />
+              <span>Search Flights</span>
+              <span className="ml-0.5">→</span>
             </Button>
           </form>
         </div>
