@@ -10,23 +10,32 @@ import {
   ShieldCheck,
   CheckCircle,
   AlertCircle,
-  Sparkles,
   ArrowLeft,
   Smartphone,
   QrCode,
+  Info,
 } from 'lucide-react';
 
 export const PaymentStep: React.FC = () => {
   const { draft, createdBooking, setStep, setCreatedBooking } = useBookingStore();
 
-  const [cardholderName, setCardholderName] = useState(
-    draft.passengers[0] ? `${draft.passengers[0].firstName} ${draft.passengers[0].lastName}` : 'Tushar Sharma'
-  );
-  const [cardNumber, setCardNumber] = useState('4242 4242 4242 4242');
-  const [expiryDate, setExpiryDate] = useState('12/28');
-  const [cvv, setCvv] = useState('123');
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentMode, setPaymentMode] = useState<'UPI' | 'CARD'>('UPI');
+
+  // UPI State
+  const [upiUtr, setUpiUtr] = useState('');
   const [isUpiProcessing, setIsUpiProcessing] = useState(false);
+
+  // Card State
+  const [cardholderName, setCardholderName] = useState(
+    draft.passengers[0]
+      ? `${draft.passengers[0].firstName} ${draft.passengers[0].lastName}`.trim()
+      : ''
+  );
+  const [cardNumber, setCardNumber] = useState('');
+  const [expiryDate, setExpiryDate] = useState('');
+  const [cvv, setCvv] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
 
   const bookingId = createdBooking?.id;
@@ -37,41 +46,94 @@ export const PaymentStep: React.FC = () => {
   const upiLink = `upi://pay?pa=9953499271@fam&pn=SkyBook+Flights&am=${flightAmount}&cu=INR&tn=Flight+Booking+${bookingRef}`;
   const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&color=0ea5e9&bgcolor=ffffff&data=${encodeURIComponent(upiLink)}`;
 
-  const handleFillTestCard = () => {
-    setCardNumber('4242 4242 4242 4242');
-    setExpiryDate('12/28');
-    setCvv('123');
+  // Format Card Number as 4-4-4-4
+  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/\D/g, '').slice(0, 16);
+    const formatted = raw.replace(/(\d{4})(?=\d)/g, '$1 ');
+    setCardNumber(formatted);
   };
 
-  const handleUpiConfirm = async () => {
+  // Format Expiry Date as MM/YY
+  const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let raw = e.target.value.replace(/\D/g, '').slice(0, 4);
+    if (raw.length >= 3) {
+      raw = `${raw.slice(0, 2)}/${raw.slice(2)}`;
+    }
+    setExpiryDate(raw);
+  };
+
+  // Format UTR as digits only (12 digits)
+  const handleUtrChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/\D/g, '').slice(0, 12);
+    setUpiUtr(raw);
+    if (error) setError(null);
+  };
+
+  // UPI Payment Verification
+  const handleUpiConfirm = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!bookingId) {
       setError('Booking session expired. Please return to step 1.');
       return;
     }
+
+    const cleanUtr = upiUtr.trim();
+    if (!cleanUtr) {
+      setError('Payment verification required: Please scan the QR code with Paytm/UPI, complete payment of ' + formatRupees(draft.flight?.totalAmount || '0') + ', and enter the 12-digit UPI Reference / UTR Number.');
+      return;
+    }
+
+    if (cleanUtr.length !== 12 || !/^\d{12}$/.test(cleanUtr)) {
+      setError('Invalid UPI UTR Number: Please enter the exact 12-digit transaction reference number from your Paytm payment receipt (e.g. 432109876543).');
+      return;
+    }
+
     try {
       setIsUpiProcessing(true);
       setError(null);
       const res = await bookingApi.processPayment({
         bookingId,
-        paymentMethod: 'UPI',
-        cardholderName: `${draft.passengers[0]?.firstName || ''} ${draft.passengers[0]?.lastName || ''}`.trim(),
-        cardNumber: '0000000000000000',
+        paymentMethod: `UPI (Ref: ${cleanUtr})`,
+        cardholderName: `${draft.passengers[0]?.firstName || ''} ${draft.passengers[0]?.lastName || ''}`.trim() || 'Traveler',
+        cardNumber: cleanUtr,
         expiryDate: '00/00',
         cvv: '000',
       });
       setCreatedBooking(res.booking);
       setStep(4);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'UPI confirmation failed. Please try again.');
+      setError(err.response?.data?.message || 'UPI verification failed. Please verify your transaction details.');
     } finally {
       setIsUpiProcessing(false);
     }
   };
 
-  const handleProcessPayment = async (e: React.FormEvent) => {
+  // Card Payment Verification
+  const handleProcessCardPayment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!bookingId) {
       setError('Booking session expired. Please return to step 1.');
+      return;
+    }
+
+    const cleanCard = cardNumber.replace(/\s+/g, '');
+    if (cleanCard.length < 15 || cleanCard.length > 16) {
+      setError('Please enter a valid 16-digit debit or credit card number.');
+      return;
+    }
+
+    if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(expiryDate.trim())) {
+      setError('Please enter a valid card expiry date in MM/YY format (e.g. 08/28).');
+      return;
+    }
+
+    if (cvv.trim().length < 3) {
+      setError('Please enter a valid 3-digit CVV/CVC code.');
+      return;
+    }
+
+    if (!cardholderName.trim()) {
+      setError('Please enter the name on your card.');
       return;
     }
 
@@ -83,7 +145,7 @@ export const PaymentStep: React.FC = () => {
         bookingId,
         paymentMethod: 'CARD',
         cardholderName,
-        cardNumber: cardNumber.replace(/\s+/g, ''),
+        cardNumber: cleanCard,
         expiryDate,
         cvv,
       });
@@ -107,227 +169,242 @@ export const PaymentStep: React.FC = () => {
         </div>
       )}
 
-      {/* Payment Card Container */}
+      {/* Main Payment Container */}
       <div className="p-6 sm:p-8 rounded-3xl glass-panel shadow-2xl border border-border/80 space-y-6">
+        {/* Header Summary */}
         <div className="flex items-center justify-between pb-4 border-b border-border/40">
           <div className="flex items-center gap-2.5">
             <div className="w-10 h-10 rounded-2xl bg-sky-500/10 text-sky-500 flex items-center justify-center">
-              <CreditCard className="w-5 h-5" />
+              <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-lg text-foreground">Secure Payment Checkout</h3>
+              <h3 className="font-bold text-lg text-foreground">Secure Payment Gateway</h3>
               <p className="text-xs text-muted-foreground">Booking Ref: <strong>{createdBooking?.bookingReference}</strong></p>
             </div>
           </div>
 
           <div className="text-right">
-            <span className="text-xs text-muted-foreground block">Total Amount</span>
+            <span className="text-xs text-muted-foreground block">Payable Amount</span>
             <span className="text-2xl font-black text-sky-500">
               {formatRupees(draft.flight?.totalAmount || '0')}
             </span>
           </div>
         </div>
 
-        {/* 1-Click Test Card Autofill */}
-        <div className="flex items-center justify-between p-3 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-xs">
-          <span className="font-semibold text-sky-600 dark:text-sky-400 flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4 text-amber-400" />
-            Testing Mode Active (Stripe Test Sandbox)
-          </span>
+        {/* Payment Method Selector Tabs */}
+        <div className="grid grid-cols-2 gap-3 p-1.5 rounded-2xl bg-muted/60 border border-border/60">
           <button
             type="button"
-            onClick={handleFillTestCard}
-            className="px-3 py-1 rounded-xl bg-sky-500 text-white font-bold hover:bg-sky-600 transition-colors shadow-xs"
+            onClick={() => { setPaymentMode('UPI'); setError(null); }}
+            className={`py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${
+              paymentMode === 'UPI'
+                ? 'bg-card text-foreground shadow-sm border border-border'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
           >
-            Autofill Test Card
+            <Smartphone className="w-4 h-4 text-emerald-500" />
+            <span>UPI / Paytm QR</span>
+            <span className="text-[10px] uppercase font-black bg-emerald-500/10 text-emerald-500 px-1.5 py-0.5 rounded-md">
+              Instant
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => { setPaymentMode('CARD'); setError(null); }}
+            className={`py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${
+              paymentMode === 'CARD'
+                ? 'bg-card text-foreground shadow-sm border border-border'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <CreditCard className="w-4 h-4 text-sky-500" />
+            <span>Debit / Credit Card</span>
           </button>
         </div>
 
-        {/* Payment Form */}
-        <form onSubmit={handleProcessPayment} className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Cardholder Name
-            </label>
-            <Input
-              value={cardholderName}
-              onChange={(e) => setCardholderName(e.target.value)}
-              placeholder="Tushar Sharma"
-              required
-            />
-          </div>
+        {/* ── MODE 1: UPI / PAYTM QR PAYMENT ── */}
+        {paymentMode === 'UPI' && (
+          <form onSubmit={handleUpiConfirm} className="space-y-6">
+            <div className="flex flex-col items-center gap-4 text-center">
+              {/* QR Code */}
+              <div className="p-3.5 bg-white rounded-3xl shadow-xl border border-sky-100">
+                <img
+                  src={qrApiUrl}
+                  alt="Paytm UPI QR Code"
+                  width={210}
+                  height={210}
+                  className="rounded-2xl block"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src =
+                      'https://api.qrserver.com/v1/create-qr-code/?size=210x210&data=upi://pay?pa=9953499271@fam';
+                  }}
+                />
+              </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Card Number
-            </label>
-            <div className="relative">
-              <Input
-                value={cardNumber}
-                onChange={(e) => setCardNumber(e.target.value)}
-                placeholder="4242 4242 4242 4242"
-                required
-              />
-              <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                <span className="text-[10px] font-bold bg-muted px-1.5 py-0.5 rounded text-foreground font-mono">
-                  VISA
-                </span>
+              {/* Amount Display */}
+              <div>
+                <p className="text-xs text-muted-foreground font-medium">Scan to pay exact amount</p>
+                <p className="text-3xl font-black text-emerald-500 tracking-tight">
+                  {formatRupees(draft.flight?.totalAmount || '0')}
+                </p>
+              </div>
+
+              {/* UPI ID Badge */}
+              <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-muted/60 border border-border/80 text-xs">
+                <span className="text-muted-foreground">UPI ID:</span>
+                <strong className="font-mono text-foreground text-sm select-all">9953499271@fam</strong>
+              </div>
+
+              {/* Direct App Link for mobile */}
+              <a
+                href={upiLink}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-600 dark:text-sky-400 font-semibold text-xs hover:bg-sky-500/20 transition-colors"
+              >
+                <Smartphone className="w-3.5 h-3.5" />
+                Open Paytm / PhonePe / GPay
+              </a>
+            </div>
+
+            {/* MANDATORY UPI UTR INPUT */}
+            <div className="p-4 rounded-2xl bg-muted/40 border border-border/80 space-y-3">
+              <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                <Info className="w-4 h-4 text-sky-500 shrink-0 mt-0.5" />
+                <p>
+                  After completing the payment on Paytm or your UPI app, enter the <strong>12-digit UPI Ref ID / UTR Number</strong> from your payment receipt below to verify and issue your ticket.
+                </p>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center justify-between">
+                  <span>12-Digit UPI Ref / UTR Number <span className="text-destructive">*</span></span>
+                  <span className="text-[11px] font-mono text-muted-foreground font-normal">{upiUtr.length}/12</span>
+                </label>
+                <Input
+                  type="text"
+                  maxLength={12}
+                  value={upiUtr}
+                  onChange={handleUtrChange}
+                  placeholder="e.g. 432109876543"
+                  className="font-mono text-base tracking-widest text-center h-12 rounded-xl"
+                  required
+                />
               </div>
             </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
+            <Button
+              type="submit"
+              size="lg"
+              disabled={isUpiProcessing || upiUtr.length !== 12}
+              className="w-full h-12 rounded-2xl text-base font-bold bg-emerald-500 hover:bg-emerald-600 shadow-xl shadow-emerald-500/25 disabled:opacity-50"
+            >
+              {isUpiProcessing ? (
+                <span className="flex items-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Verifying Payment &amp; Issuing Ticket...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5" />
+                  Verify UPI Payment &amp; Issue Ticket
+                </span>
+              )}
+            </Button>
+          </form>
+        )}
+
+        {/* ── MODE 2: CARD PAYMENT ── */}
+        {paymentMode === 'CARD' && (
+          <form onSubmit={handleProcessCardPayment} className="space-y-4">
             <div className="space-y-1.5">
               <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Expiry Date
+                Cardholder Name <span className="text-destructive">*</span>
               </label>
               <Input
-                value={expiryDate}
-                onChange={(e) => setExpiryDate(e.target.value)}
-                placeholder="MM/YY"
+                value={cardholderName}
+                onChange={(e) => setCardholderName(e.target.value)}
+                placeholder="Full name on card"
                 required
               />
             </div>
 
             <div className="space-y-1.5">
               <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                CVV / CVC
+                Card Number <span className="text-destructive">*</span>
               </label>
               <Input
-                type="password"
-                maxLength={4}
-                value={cvv}
-                onChange={(e) => setCvv(e.target.value)}
-                placeholder="123"
+                value={cardNumber}
+                onChange={handleCardNumberChange}
+                placeholder="0000 0000 0000 0000"
+                maxLength={19}
+                className="font-mono"
                 required
               />
             </div>
-          </div>
 
-          {/* Security Guarantee Badges */}
-          <div className="pt-2 flex items-center justify-between text-xs text-muted-foreground border-t border-border/40">
-            <span className="flex items-center gap-1.5">
-              <Lock className="w-3.5 h-3.5 text-emerald-500" />
-              256-bit SSL Bank Grade Encryption
-            </span>
-            <span className="flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-sky-500" />
-              PCI-DSS Level 1 Certified
-            </span>
-          </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Expiry Date <span className="text-destructive">*</span>
+                </label>
+                <Input
+                  value={expiryDate}
+                  onChange={handleExpiryChange}
+                  placeholder="MM/YY"
+                  maxLength={5}
+                  className="font-mono text-center"
+                  required
+                />
+              </div>
 
-          <Button
-            type="submit"
-            size="lg"
-            disabled={isProcessing}
-            className="w-full h-12 rounded-2xl text-base font-bold shadow-xl shadow-sky-500/25 mt-4"
-          >
-            {isProcessing ? (
-              <span className="flex items-center gap-2">
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Tokenizing & Confirming Ticket...
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  CVV / CVC <span className="text-destructive">*</span>
+                </label>
+                <Input
+                  type="password"
+                  maxLength={4}
+                  value={cvv}
+                  onChange={(e) => setCvv(e.target.value.replace(/\D/g, ''))}
+                  placeholder="•••"
+                  className="font-mono text-center"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Security Guarantee Badges */}
+            <div className="pt-2 flex items-center justify-between text-xs text-muted-foreground border-t border-border/40">
+              <span className="flex items-center gap-1.5">
+                <Lock className="w-3.5 h-3.5 text-emerald-500" />
+                256-bit SSL Bank Grade Encryption
               </span>
-            ) : (
-              <span>Pay {formatRupees(draft.flight?.totalAmount || '0')} & Issue E-Ticket</span>
-            )}
-          </Button>
-        </form>
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-sky-500" />
+                PCI-DSS Level 1 Certified
+              </span>
+            </div>
+
+            <Button
+              type="submit"
+              size="lg"
+              disabled={isProcessing || cardNumber.replace(/\s+/g, '').length < 15 || cvv.length < 3 || expiryDate.length < 5}
+              className="w-full h-12 rounded-2xl text-base font-bold shadow-xl shadow-sky-500/25 mt-4 disabled:opacity-50"
+            >
+              {isProcessing ? (
+                <span className="flex items-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Verifying Card &amp; Issuing Ticket...
+                </span>
+              ) : (
+                <span>Pay {formatRupees(draft.flight?.totalAmount || '0')} &amp; Issue E-Ticket</span>
+              )}
+            </Button>
+          </form>
+        )}
       </div>
 
-      {/* ── UPI / QR Payment ── */}
-      <div className="p-6 sm:p-8 rounded-3xl glass-panel shadow-2xl border border-border/80 space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-3 pb-4 border-b border-border/40">
-          <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
-            <QrCode className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="font-bold text-lg text-foreground">Pay via UPI / QR Code</h3>
-            <p className="text-xs text-muted-foreground">
-              Works with Paytm, Google Pay, PhonePe &amp; all UPI apps
-            </p>
-          </div>
-        </div>
-
-        {/* OR divider */}
-        <div className="flex items-center gap-3">
-          <div className="flex-1 h-px bg-border/50" />
-          <span className="text-xs font-bold tracking-widest text-muted-foreground uppercase">OR</span>
-          <div className="flex-1 h-px bg-border/50" />
-        </div>
-
-        {/* QR + Details */}
-        <div className="flex flex-col items-center gap-4">
-          {/* QR Code */}
-          <div className="p-3 bg-white rounded-2xl shadow-lg">
-            <img
-              src={qrApiUrl}
-              alt="UPI QR Code"
-              width={220}
-              height={220}
-              className="rounded-xl block"
-              onError={(e) => {
-                (e.currentTarget as HTMLImageElement).src =
-                  'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=upi://pay?pa=9953499271@fam';
-              }}
-            />
-          </div>
-
-          {/* Amount */}
-          <div className="text-center">
-            <p className="text-xs text-muted-foreground mb-0.5">Pay exactly</p>
-            <p className="text-3xl font-black text-emerald-500">{formatRupees(draft.flight?.totalAmount || '0')}</p>
-          </div>
-
-          {/* UPI ID Badge */}
-          <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-muted/60 border border-border/60">
-            <Smartphone className="w-4 h-4 text-sky-500 shrink-0" />
-            <span className="text-sm font-semibold tracking-tight text-foreground select-all">
-              9953499271@fam
-            </span>
-          </div>
-
-          <p className="text-xs text-muted-foreground text-center max-w-xs">
-            Scan the QR with any UPI app. The amount is pre-filled. After paying, tap the button below to confirm your ticket.
-          </p>
-
-          {/* Paytm deep-link direct button (mobile) */}
-          <a
-            href={upiLink}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-sky-500/10 border border-sky-500/30 text-sky-600 dark:text-sky-400 font-semibold text-sm hover:bg-sky-500/20 transition-colors"
-          >
-            <Smartphone className="w-4 h-4" />
-            Open in Paytm / UPI App
-          </a>
-        </div>
-
-        {/* Confirm after payment */}
-        <div className="pt-2 border-t border-border/40 space-y-3">
-          <p className="text-xs text-muted-foreground text-center">
-            Once you have completed the UPI payment, tap below to issue your e-ticket.
-          </p>
-          <Button
-            type="button"
-            size="lg"
-            onClick={handleUpiConfirm}
-            disabled={isUpiProcessing}
-            className="w-full h-12 rounded-2xl text-base font-bold bg-emerald-500 hover:bg-emerald-600 shadow-xl shadow-emerald-500/25"
-          >
-            {isUpiProcessing ? (
-              <span className="flex items-center gap-2">
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Verifying &amp; Issuing Ticket...
-              </span>
-            ) : (
-              <span className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5" />
-                I've Paid via UPI — Issue My Ticket
-              </span>
-            )}
-          </Button>
-        </div>
-      </div>
-
+      {/* Navigation */}
       <div className="flex justify-start">
         <Button
           type="button"

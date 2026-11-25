@@ -18,23 +18,45 @@ import {
 import { motion } from 'framer-motion';
 
 export const ConfirmationStep: React.FC = () => {
-  const { createdBooking, resetBooking } = useBookingStore();
+  const { createdBooking, resetBooking, setStep } = useBookingStore();
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
   useEffect(() => {
-    // Fire celebratory confetti on mount
-    try {
-      confetti({
-        particleCount: 80,
-        spread: 70,
-        origin: { y: 0.6 },
-      });
-    } catch (e) {
-      // ignore
+    // Fire celebratory confetti on mount ONLY if confirmed
+    if (createdBooking && createdBooking.status === 'CONFIRMED') {
+      try {
+        confetti({
+          particleCount: 80,
+          spread: 70,
+          origin: { y: 0.6 },
+        });
+      } catch (e) {
+        // ignore
+      }
     }
-  }, []);
+  }, [createdBooking]);
 
-  if (!createdBooking) return null;
+  if (!createdBooking || createdBooking.status !== 'CONFIRMED') {
+    return (
+      <div className="max-w-md mx-auto p-8 rounded-3xl glass-panel text-center space-y-5 border border-destructive/30">
+        <div className="w-16 h-16 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
+          <ShieldCheck className="w-8 h-8" />
+        </div>
+        <div className="space-y-1">
+          <h3 className="text-xl font-bold text-foreground">Payment Verification Required</h3>
+          <p className="text-xs text-muted-foreground">
+            No e-ticket can be generated without completing payment. Your booking reservation is held in <strong>PENDING</strong> status.
+          </p>
+        </div>
+        <Button
+          onClick={() => setStep(3)}
+          className="w-full h-11 rounded-xl font-bold bg-sky-500 hover:bg-sky-600"
+        >
+          Proceed to Payment Step
+        </Button>
+      </div>
+    );
+  }
 
   const handleDownloadTicket = async () => {
     try {
